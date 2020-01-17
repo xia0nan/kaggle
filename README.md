@@ -13,4 +13,4 @@ My Link - [XIAO NAN](https://www.kaggle.com/nanxiao)
 ### 2020.01.17
 [Real or Not? NLP with Disaster Tweets](https://www.kaggle.com/c/nlp-getting-started)
 
-[Progress Readme]()
+[Progress Readme](NLP_with_Disaster_Tweets/README.md)
