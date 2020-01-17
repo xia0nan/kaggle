@@ -1,8 +1,10 @@
-## Contest Readme
-Start: 17.01.2020
-End: 23.03.2020
+# Contest Readme
+## Real or Not? NLP with Disaster Tweets
 
-Contest Page:
+* Start: 17.01.2020
+* End: 23.03.2020
+
+* Contest Page:
 [Real or Not? NLP with Disaster Tweets](https://www.kaggle.com/c/nlp-getting-started)
 
 ### Notebook study
