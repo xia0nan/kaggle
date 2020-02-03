@@ -14,3 +14,4 @@ Notebook                                                                        
 [EDA, cleaning, Baseline](https://www.kaggle.com/shahules/basic-eda-cleaning-and-glove/data)     | Baseline
 [NLP Getting Started Tutorial](https://www.kaggle.com/philculliton/nlp-getting-started-tutorial) | Basic
 [NLP with Disaster Tweets - EDA, Cleaning and BERT](https://www.kaggle.com/gunesevitan/nlp-with-disaster-tweets-eda-cleaning-and-bert)                                                                                        | BERT Baseline
+[Disaster NLP: Keras BERT using TFHub](https://www.kaggle.com/xhlulu/disaster-nlp-keras-bert-using-tfhub) | BERT Starter
