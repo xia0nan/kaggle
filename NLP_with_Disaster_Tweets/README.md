@@ -9,5 +9,8 @@
 
 ### Notebook study
 
-1. [EDA, cleaning, Baseline](https://www.kaggle.com/shahules/basic-eda-cleaning-and-glove/data)
-2. 
+Notebook                                                                                         | Notes
+------------------------------------------------------------------------------------------------ | ----------
+[EDA, cleaning, Baseline](https://www.kaggle.com/shahules/basic-eda-cleaning-and-glove/data)     | Baseline
+[NLP Getting Started Tutorial](https://www.kaggle.com/philculliton/nlp-getting-started-tutorial) | Basic
+[NLP with Disaster Tweets - EDA, Cleaning and BERT](https://www.kaggle.com/gunesevitan/nlp-with-disaster-tweets-eda-cleaning-and-bert)                                                                                        | BERT Baseline
