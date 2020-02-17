@@ -1,9 +1,14 @@
 import re
 import string
+import os
+import sys
+from pathlib import Path
 
 import torch
 from transformers import BertModel, BertTokenizer
 
+CURRENT_DIR = Path.cwd()
+DATA_DIR = CURRENT_DIR.parent / 'data'
 
 class Config(dict):
     def __init__(self, **kwargs):
@@ -90,12 +95,12 @@ def process():
         discriminative=False,
         max_seq_len=64,
         sample_size=6000,
-        path_to_dataset = '/kaggle/input/nlp-getting-started/'
+        path_to_dataset = DATA_DIR
     )
     
     # read train set and test set
-    test = pd.read_csv(os.path.join(path_to_dataset, 'test.csv'))
-    train = pd.read_csv(os.path.join(path_to_dataset, 'train.csv'))
+    test = pd.read_csv(str(DATA_DIR / 'test.csv'))
+    train = pd.read_csv(str(DATA_DIR / 'train.csv'))
     
     # load BERT Tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
