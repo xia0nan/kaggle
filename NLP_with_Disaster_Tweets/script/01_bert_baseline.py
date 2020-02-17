@@ -38,20 +38,22 @@ class Model(torch.nn.Module):
         return x
 
 
-def bert_encode(text, max_len=512):
+def bert_encode(text, tokenizer, max_len=512):
     """ BERT encoder for text """
     # tokenize text using BERT tokenizer
     text = tokenizer.tokenize(text)
     # remove 2 tokens for start and end token
     text = text[:max_len-2]
+    # the rest of max_len need to be pad
+    pad_len = max_len - len(input_sequence)
     # add start and end token
     input_sequence = ["[CLS]"] + text + ["[SEP]"]
     # convert token to token_id
     tokens = tokenizer.convert_tokens_to_ids(input_sequence)
     # padding to max_len
-    tokens += [0] * (max_len - len(input_sequence))
+    tokens += [0] * pad_len
     # triangle masking
-    pad_masks = [1] * len(input_sequence) + [0] * (max_len - len(input_sequence))
+    pad_masks = [1] * len(input_sequence) + [0] * pad_len
     return tokens, pad_masks
 
 
@@ -123,7 +125,7 @@ def process():
     train_tokens = []
     train_pad_masks = []
     for text in train_text:
-        tokens, masks = bert_encode(text)
+        tokens, masks = bert_encode(text, tokenizer)
         train_tokens.append(tokens)
         train_pad_masks.append(masks)
         
@@ -134,7 +136,7 @@ def process():
     val_tokens = []
     val_pad_masks = []
     for text in val_text:
-        tokens, masks = bert_encode(text)
+        tokens, masks = bert_encode(text, tokenizer)
         val_tokens.append(tokens)
         val_pad_masks.append(masks)
         
@@ -143,9 +145,9 @@ def process():
     
     # build training dataset
     train_dataset = Dataset(
-                        train_tokens=train_tokens,
-                        train_pad_masks=train_pad_masks,
-                        targets=train.target[:config.sample_size]
+        train_tokens=train_tokens,
+        train_pad_masks=train_pad_masks,
+        targets=train.target[:config.sample_size]
     )
     
     # define hyperparameters
@@ -153,7 +155,11 @@ def process():
     EPOCHS = 2
     
     # build training dataloader
-    train_dataloader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=config.bs, shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(
+        dataset=train_dataset, 
+        batch_size=config.bs, 
+        shuffle=True
+    )
     
     # define loss and optimizer
     criterion = torch.nn.BCEWithLogitsLoss()
@@ -178,16 +184,27 @@ def process():
             loss.backward()
             opt.step()
             print("Step:", i)
-        print('\rEpoch: %d/%d, %f%% loss: %0.2f'% (epoch+1, EPOCHS, (i+1)/len(train_dataloader)*100, loss.item()), end='')
+        print('\rEpoch: %d/%d, %f%% loss: %0.2f'% (
+                epoch+1, 
+                EPOCHS, 
+                (i+1)/len(train_dataloader)*100, 
+                loss.item()
+            ),
+            end=''
+        )
         print()
         
     # build validation dataset and dataloader
     val_dataset = Dataset(
-                        train_tokens=val_tokens,
-                        train_pad_masks=val_pad_masks,
-                        targets=train.target[6000:].reset_index(drop=True)
+        train_tokens=val_tokens,
+        train_pad_masks=val_pad_masks,
+        targets=train.target[6000:].reset_index(drop=True)
     )
-    val_dataloader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=3, shuffle=False)
+    val_dataloader = torch.utils.data.DataLoader(
+        dataset=val_dataset, 
+        batch_size=3, 
+        shuffle=False
+    )
     
     # define accuracy metric
     def accuracy(y_actual, y_pred):
@@ -203,10 +220,18 @@ def process():
                     tokens.long().to(device), 
                     masks.long().to(device), 
                 )
-        loss = criterion(y_pred,  target[:, None].float().to(device))
-        acc = accuracy(target.cpu().numpy(), y_pred.detach().cpu().numpy().squeeze())
+        loss = criterion(y_pred, 
+                         target[:, None].float().to(device))
+        acc = accuracy(target.cpu().numpy(), 
+                       y_pred.detach().cpu().numpy().squeeze())
         avg_acc += acc
-        print('\r%0.2f%% loss: %0.2f, accuracy %0.2f'% (i/len(val_dataloader)*100, loss.item(), acc), end='')
+        print('\r%0.2f%% loss: %0.2f, accuracy %0.2f'% (
+                i/len(val_dataloader)*100, 
+                loss.item(), 
+                acc
+            ), 
+            end=''
+        )
     print('\nAverage accuracy: ', avg_acc / len(val_dataloader))
     
     # define test dataset
@@ -233,7 +258,7 @@ def process():
     test_tokens = []
     test_pad_masks = []
     for text in test.text:
-        tokens, masks = bert_encode(text)
+        tokens, masks = bert_encode(text, tokenizer)
         test_tokens.append(tokens)
         test_pad_masks.append(masks)
         
@@ -244,7 +269,7 @@ def process():
     test_tokens = []
     test_pad_masks = []
     for text in test.text:
-        tokens, masks = bert_encode(text)
+        tokens, masks = bert_encode(text, tokenizer)
         test_tokens.append(tokens)
         test_pad_masks.append(masks)
         
@@ -256,7 +281,11 @@ def process():
         test_tokens=test_tokens,
         test_pad_masks=test_pad_masks
     )
-    test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=3, shuffle=False)
+    test_dataloader = torch.utils.data.DataLoader(
+        dataset=test_dataset, 
+        batch_size=3, 
+        shuffle=False
+    )
     
     # get result from test dataset
     model.eval()
@@ -270,13 +299,13 @@ def process():
         y_preds += y_pred.detach().cpu().numpy().squeeze().tolist()
         
     # get submission dataframe
-    submission_df = pd.read_csv(os.path.join(path_to_dataset, 'sample_submission.csv'))
+    submission_df = pd.read_csv(str(DATA_DIR / 'sample_submission.csv'))
     submission_df['target'] = (np.array(y_preds) > 0).astype('int')
     print(submission_df.target.value_counts())
     print(submission_df.head())
     
     # output csv
-    submission_df.to_csv('submission.csv', index=False)
+    submission_df.to_csv(str(DATA_DIR / 'submission.csv'), index=False)
     
 if __name__ == "__main__":
     process()
