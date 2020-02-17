@@ -85,7 +85,7 @@ class Dataset(torch.utils.data.Dataset):
         
         return len(self.train_tokens)
 
-def process():
+def main():
     
     # configuration
     config = Config(
@@ -150,9 +150,6 @@ def process():
         targets=train.target[:config.sample_size]
     )
     
-    # define hyperparameters
-    batch_size = 12
-    EPOCHS = 2
     
     # build training dataloader
     train_dataloader = torch.utils.data.DataLoader(
@@ -308,4 +305,4 @@ def process():
     submission_df.to_csv(str(DATA_DIR / 'submission.csv'), index=False)
     
 if __name__ == "__main__":
-    process()
+    main()
