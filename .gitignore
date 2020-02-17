@@ -250,3 +250,6 @@ fabric.properties
 
 ## VScode
 .vscode/
+
+## data folder
+data/
