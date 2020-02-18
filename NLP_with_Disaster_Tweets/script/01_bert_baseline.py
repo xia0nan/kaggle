@@ -52,20 +52,25 @@ class Model(torch.nn.Module):
 
 
 def bert_encode(text, tokenizer, max_len=512):
-    """ BERT encoder for text """
+    """ BERT encoder for text 
+    
+    Return:
+    @tokens: input token ids with 0s padding
+    @pad_masks: 1 for inputs and 0 for paddings
+    """
     # tokenize text using BERT tokenizer
     text = tokenizer.tokenize(text)
     # remove 2 tokens for start and end token
     text = text[:max_len-2]
     # add start and end token
     input_sequence = ["[CLS]"] + text + ["[SEP]"]
-    # the rest of max_len need to be pad
-    pad_len = max_len - len(input_sequence)
     # convert token to token_id
     tokens = tokenizer.convert_tokens_to_ids(input_sequence)
+    # the rest of max_len need to be pad
+    pad_len = max_len - len(input_sequence)
     # padding to max_len
     tokens += [0] * pad_len
-    # triangle masking
+    # masking, 1 for inputs and 0 for paddings
     pad_masks = [1] * len(input_sequence) + [0] * pad_len
     return tokens, pad_masks
 
@@ -194,7 +199,7 @@ def main():
     val_dataset = Dataset(
         train_tokens=val_tokens,
         train_pad_masks=val_pad_masks,
-        targets=train.target[6000:].reset_index(drop=True)
+        targets=train.target[config.sample_size:].reset_index(drop=True)
     )
     val_dataloader = torch.utils.data.DataLoader(
         dataset=val_dataset, 
@@ -250,17 +255,6 @@ def main():
             
             return len(self.test_tokens)
         
-    # encode test text and get mask
-    test_tokens = []
-    test_pad_masks = []
-    for text in test.text:
-        tokens, masks = bert_encode(text, tokenizer)
-        test_tokens.append(tokens)
-        test_pad_masks.append(masks)
-        
-    test_tokens = np.array(test_tokens)
-    test_pad_masks = np.array(test_pad_masks)
-    
     # encode test text and get mask
     test_tokens = []
     test_pad_masks = []
