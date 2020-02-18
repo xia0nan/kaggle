@@ -3,7 +3,8 @@ import string
 import os
 import sys
 from pathlib import Path
-
+import numpy as np
+import pandas as pd
 import torch
 from transformers import BertModel, BertTokenizer
 
@@ -20,6 +21,18 @@ class Config(dict):
         self[key] = val
         setattr(self, key, val)
 
+# configuration
+config = Config(
+    testing=False,
+    model_name="bert-base-uncased",
+    max_lr=1e-5,
+    epochs=2,
+    bs=12,
+    discriminative=False,
+    max_seq_len=64,
+    sample_size=6000,
+    path_to_dataset = DATA_DIR
+)
 
 # define model
 class Model(torch.nn.Module):
@@ -44,10 +57,10 @@ def bert_encode(text, tokenizer, max_len=512):
     text = tokenizer.tokenize(text)
     # remove 2 tokens for start and end token
     text = text[:max_len-2]
-    # the rest of max_len need to be pad
-    pad_len = max_len - len(input_sequence)
     # add start and end token
     input_sequence = ["[CLS]"] + text + ["[SEP]"]
+    # the rest of max_len need to be pad
+    pad_len = max_len - len(input_sequence)
     # convert token to token_id
     tokens = tokenizer.convert_tokens_to_ids(input_sequence)
     # padding to max_len
@@ -86,20 +99,6 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.train_tokens)
 
 def main():
-    
-    # configuration
-    config = Config(
-        testing=False,
-        model_name="bert-base-uncased",
-        max_lr=1e-5,
-        epochs=2,
-        bs=12,
-        discriminative=False,
-        max_seq_len=64,
-        sample_size=6000,
-        path_to_dataset = DATA_DIR
-    )
-    
     # read train set and test set
     test = pd.read_csv(str(DATA_DIR / 'test.csv'))
     train = pd.read_csv(str(DATA_DIR / 'train.csv'))
@@ -183,7 +182,7 @@ def main():
             print("Step:", i)
         print('\rEpoch: %d/%d, %f%% loss: %0.2f'% (
                 epoch+1, 
-                EPOCHS, 
+                config.epochs, 
                 (i+1)/len(train_dataloader)*100, 
                 loss.item()
             ),
