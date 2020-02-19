@@ -253,3 +253,8 @@ fabric.properties
 
 ## data folder
 data/
+
+## Jupyter notebook
+*/notebook/cache_dir/
+*/notebook/outputs/
+*/notebook/runs/
